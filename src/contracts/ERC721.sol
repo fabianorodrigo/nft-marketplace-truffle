@@ -23,19 +23,14 @@ contract ERC721{
         _;
     }
 
-    /// @notice mint a NFT with id {_tokenId} to the owner {_to}
-    function _mint(address _to, uint256 _tokenId) internal notZeroAccount(_to) notMintedToken(_tokenId) {
-        _tokenOwner[_tokenId] = _to;
-        _ownerBalance[_to]++;
-        emit Transfer(address(0),_to,_tokenId);
-    }
 
     /// @notice Count all NFTs assigned to an owner
     /// @dev NFTs assigned to the zero address are considered invalid, and this
     ///  function throws for queries about the zero address.
     /// @param _owner An address for whom to query the balance
     /// @return The number of NFTs owned by `_owner`, possibly zero
-    function balanceOf(address _owner) external view returns (uint256){
+    function balanceOf(address _owner) public view returns (uint256){
+        require(_owner != address(0),"ERC721: zero address is not allowed");
         return _ownerBalance[_owner];
     }
 
@@ -45,7 +40,16 @@ contract ERC721{
     /// @param _tokenId The identifier for an NFT
     /// @return The address of the owner of the NFT
     function ownerOf(uint256 _tokenId) external view returns (address){
-        return _tokenOwner[_tokenId];
+        address _owner = _tokenOwner[_tokenId];
+        require(_owner != address(0),"ERC721: invalid _tokenId");
+        return _owner;
+    }    
+
+    /// @notice mint a NFT with id {_tokenId} to the owner {_to}
+    function _mint(address _to, uint256 _tokenId) internal virtual notZeroAccount(_to) notMintedToken(_tokenId) {
+        _tokenOwner[_tokenId] = _to;
+        _ownerBalance[_to]+= 1;
+        emit Transfer(address(0),_to,_tokenId);
     }
 
 }
