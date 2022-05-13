@@ -2,11 +2,12 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 import "./ERC721.sol";
+import "./interfaces/IERC721Enumerable.sol";
 
 /// @title ERC-721 Non-Fungible Token Standard, optional enumeration extension
 /// @dev See https://eips.ethereum.org/EIPS/eip-721
 ///  Note: the ERC-165 identifier for this interface is 0x780e9d63.
-contract ERC721Enumerable is ERC721 {
+contract ERC721Enumerable is IERC721Enumerable, ERC721 {
   uint256[] private _allTokens;
 
   // mapping from tokenId to position in _allTokens array
@@ -15,6 +16,15 @@ contract ERC721Enumerable is ERC721 {
   mapping(address => uint256[]) private _owner_tokensIdsArray;
   // mapping from tokenId index of the owner tokens lists
   mapping(uint256 => uint256) private _ownedTokensIndex;
+
+  constructor() {
+    IERC721Enumerable i;
+    _registerInterface(
+      i.totalSupply.selector ^
+        i.tokenByIndex.selector ^
+        i.tokenOfOwnerByIndex.selector
+    );
+  }
 
   /// @notice Count NFTs tracked by this contract
   /// @return A count of valid NFTs tracked by this contract, where each one of

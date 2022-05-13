@@ -5,7 +5,9 @@ import "./ERC721Metadata.sol";
 import "./ERC721Enumerable.sol";
 
 contract ERC721Connector is ERC721Metadata, ERC721Enumerable {
-    constructor(string memory __name, string memory __symbol)
-        ERC721Metadata(__name, __symbol)
-    {}
+  constructor(
+    string memory __name,
+    string memory __symbol,
+    string memory __tokenURI
+  ) ERC721Metadata(__name, __symbol, __tokenURI) {}
 }
