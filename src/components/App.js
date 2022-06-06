@@ -10,6 +10,8 @@ class App extends Component {
       account: "",
       networkId: 0,
       totalSupply: 0,
+      contract: null,
+      kryptoBirdz: [],
     };
   }
 
@@ -40,15 +42,34 @@ class App extends Component {
     if (networkData) {
       const abi = KryptoBird.abi;
       const address = networkData.address;
-      const kryptoBird = new web3.eth.Contract(abi, address);
-      const totalSupply = await kryptoBird.methods.totalSupply().call();
-      console.log(totalSupply);
+      const contract = new web3.eth.Contract(abi, address);
+      this.setState({contract});
+      const totalSupply = await contract.methods.totalSupply().call();
       this.setState({totalSupply});
+      //load crypto birdz
+      for (let i = 0; i < totalSupply; i++) {
+        const bird = await contract.methods.kryptoBirdz(i).call();
+        this.setState({kryptoBirdz: [...this.state.kryptoBirdz, bird]});
+      }
+      console.log(this.state.kryptoBirdz);
+    } else {
+      alert("KryptoBirdz contract not deployed to detected network");
     }
     this.setState({account: accounts[0], networkId: networkId});
   }
 
+  mint = (kryptoBird) => {
+    this.state.contract.methods
+      .mint(kryptoBird)
+      .send({from: this.state.account})
+      .once("receipt", (receipt) => {
+        console.log(receipt);
+        this.setState({kryptoBirdz: [...this.state.kryptoBirdz, kryptoBird]});
+      });
+  };
+
   render() {
+    console.log(this.state.kryptoBirdz);
     return (
       <div>
         <nav className="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
@@ -66,7 +87,37 @@ class App extends Component {
             </li>
           </ul>
         </nav>
-        <h1>NFT Marketplace</h1>
+        <div className="container-fluid mt-1">
+          <div className="row">
+            <main role="main" className="col-lg-12 d-flex text-center">
+              <div className="content mr-auto ml-auto" style={{opacity: 0.8}}>
+                <h1 style={{color: "white"}}>KryptoBirdz - NFT Market</h1>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    this.mint(this.kryptoBird.value);
+                  }}
+                >
+                  <input
+                    type="text"
+                    className="form-control mb-1"
+                    placeholder="File location of krypto bird"
+                    name="kryptoBird"
+                    ref={(input) => {
+                      this.kryptoBird = input;
+                    }}
+                  />
+                  <input
+                    style={{margin: "6px"}}
+                    type="submit"
+                    value="Mint"
+                    className="btn btn-primary btn-black"
+                  />
+                </form>
+              </div>
+            </main>
+          </div>
+        </div>
       </div>
     );
   }
